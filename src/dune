@@ -1,0 +1,3 @@
+(executable
+ (name jdlv_term)
+ (modules jdlv_term))
