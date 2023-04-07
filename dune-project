@@ -2,7 +2,7 @@
 
 (implicit_transitive_deps false)
 
-(name jdlv_term)
+(name jdl_vdm)
 
 (license ISC)
 
@@ -11,23 +11,23 @@
 (maintainers "TODO")
 
 (source
- (uri TODO/jdlv_term))
+ (uri TODO/jdl_vdm))
 
-(homepage TODO/jdlv_term)
+(homepage TODO/jdl_vdm)
 
-(bug_reports TODO/jdlv_term)
+(bug_reports TODO/jdl_vdm)
 
-(documentation TODO/jdlv_term)
+(documentation TODO/jdl_vdm)
 
 (generate_opam_files true)
 
 (package
- (name jdlv_term)
+ (name jdl_vdm)
  (synopsis "OCaml library/executable to TODO")
  (description
-  "jdlv_term is an OCaml library/executable to TODO.")
+  "jdl_vdm is an OCaml library/executable to TODO.")
  (tags
-  (jdlv_term TODO TODO TODO TODO))
+  (jdl_vdm TODO TODO TODO TODO))
  (depends
   (ocaml
    (>= 4.08))))

@@ -1,11 +1,11 @@
-{0 jdlv_term}
+{0 jdl_vdm}
 
-{{:TODO/jdlv_term} jdlv_term} is an {{:https://ocaml.org} OCaml} library/executable to TODO.
+{{:TODO/jdl_vdm} jdl_vdm} is an {{:https://ocaml.org} OCaml} library/executable to TODO.
 
 {1:api API}
 
 {!modules:
-Jdlv_term
+Jdlv_vdm
 }
 
 {1:private_api Private API}

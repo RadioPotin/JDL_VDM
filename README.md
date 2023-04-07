@@ -1,13 +1,13 @@
-# jdlv_term
+# jdl_vdm
 
-[jdlv_term] is an [OCaml] executable/library to TODO.
+[jdl_vdm] is an [OCaml] executable/library to TODO.
 
 ## Installation
 
-`jdlv_term` can be installed with [opam]:
+`jdl_vdm` can be installed with [opam]:
 
 ```sh
-opam install jdlv_term
+opam install jdl_vdm
 ```
 
 If you don't have `opam`, you can install it following the [how to install opam] guide.
@@ -30,11 +30,11 @@ For more, have a look at the [example] folder, at the [documentation] or at the 
 [CHANGELOG]: ./CHANGES.md
 [example]: ./example
 [LICENSE]: ./LICENSE.md
-[opam file]: ./jdlv_term.opam
+[opam file]: ./jdl_vdm.opam
 [test suite]: ./test
 
-[documentation]: TODO/jdlv_term
+[documentation]: TODO/jdl_vdm
 [how to install opam]: https://opam.ocaml.org/doc/Install.html
 [OCaml]: https://ocaml.org
 [opam]: https://opam.ocaml.org/
-[jdlv_term]: TODO/jdlv_term
+[jdl_vdm]: TODO/jdl_vdm
