@@ -1,5 +1,18 @@
+let error s = failwith @@ Format.sprintf "%s" s
+
+let usage = Format.sprintf "Usage: %s <size_of_the_map : int>" Sys.argv.(0)
+
+let height, width =
+  if Array.length Sys.argv <> 2 then error usage
+  else
+    match int_of_string_opt Sys.argv.(1) with
+    | None -> error usage
+    | Some size -> (size, size)
+
+let world = Array.make_matrix width height false
+
 module Pp : sig
-  val world : Format.formatter -> bool array array -> unit
+  val world : Format.formatter -> unit -> unit
 end = struct
   let pp_print_iter ~pp_sep iter pp_v ppf v =
     iter
@@ -18,116 +31,79 @@ end = struct
       (fun fmt b -> Format.pp_print_string fmt (if b then "😒" else "🫥"))
       arr
 
-  let world fmt arr =
+  let world fmt () =
     pp_array
       ~pp_sep:(fun fmt () -> Format.fprintf fmt "@\n")
-      fmt print_boules arr
+      fmt print_boules world
 end
 
 module Life_and_death : sig
-  val update : bool array array -> bool array array
+  val update : unit -> unit
 end = struct
-  type verdict =
-    | Death
-    | Life
-
-  module Look : sig
-    val for_life_or_death : int * int -> int * int -> (int * int) list
-  end = struct
-    let left (x, y) _max_xy = if x = 0 then None else Some (x - 1, y)
-
-    let up_left (x, y) _max_xy =
-      if x = 0 || y = 0 then None else Some (x - 1, y - 1)
-
-    let up (x, y) _max_xy = if y = 0 then None else Some (x, y - 1)
-
-    let up_right (x, y) (max_x, _max_y) =
-      if x = max_x - 1 || y = 0 then None else Some (x + 1, y - 1)
-
-    let right (x, y) (max_x, _max_y) =
-      if x = max_x - 1 then None else Some (x + 1, y)
-
-    let down_right (x, y) (max_x, max_y) =
-      if x = max_x - 1 || y = max_y - 1 then None else Some (x + 1, y + 1)
-
-    let down (x, y) (_max_x, max_y) =
-      if y = max_y - 1 then None else Some (x, y + 1)
-
-    let down_left (x, y) (_max_x, max_y) =
-      if x = 0 || y = max_y - 1 then None else Some (x - 1, y + 1)
-
-    let movements =
-      [ up; up_right; right; down_right; down; down_left; left; up_left ]
-
-    let for_life_or_death pos size =
-      List.filter_map (fun f -> f pos size) movements
-  end
-
-  let count_live neighbors world =
-    List.fold_left
-      (fun live (x, y) -> if world.(x).(y) then succ live else live)
-      0 neighbors
-
-  let should_it_live_or_die ((posx, posy) as location) world : verdict =
-    let size = (Array.length world.(0), Array.length world) in
-    let cell = world.(posx).(posy) in
-    let neighbors_in = Look.for_life_or_death location size in
-    let fate =
-      if cell then
-        match count_live neighbors_in world with 2 | 3 -> Life | _n -> Death
-      else match count_live neighbors_in world with 3 -> Life | _n -> Death
+  let count_live_neighbours (posx, posy) =
+    let neighbours =
+      [ (0, -1); (1, -1); (1, 0); (1, 1); (0, 1); (-1, 1); (-1, 0); (-1, -1) ]
     in
-    match fate with
-    | Life -> Life
-    | Death -> if Random.int 1000 = 0 then Life else Death
+    List.fold_left
+      (fun live_ones (n_posx, n_posy) ->
+        let coordx = posx + n_posx in
+        let coordy = posy + n_posy in
+        if
+          coordx < 0
+          || coordx >= width - 1
+          || coordy < 0
+          || coordy >= height - 1
+          || not world.(coordx).(coordy)
+        then live_ones
+        else live_ones + 1 )
+      0 neighbours
 
-  let update world =
-    let deep_copy_of arr = Array.map (Array.map Fun.id) arr in
-    let new_world = deep_copy_of world in
-    Array.iteri
-      (fun j l ->
-        Array.iteri
-          (fun i _c ->
-            match should_it_live_or_die (i, j) world with
-            | Death -> new_world.(i).(j) <- false
-            | Life -> new_world.(i).(j) <- true )
-          l )
-      world;
-    new_world
+  let update () =
+    let live_neighbours =
+      Array.mapi
+        (fun j row ->
+          Array.mapi (fun i _cell -> count_live_neighbours (i, j)) row )
+        world
+    in
+    for j = 0 to height - 1 do
+      for i = 0 to width - 1 do
+        world.(i).(j) <-
+          ( if world.(i).(j) then
+              live_neighbours.(i).(j) = 2 || live_neighbours.(i).(j) = 3
+            else live_neighbours.(i).(j) = 3 )
+      done
+    done
 end
 
-let observe w =
+let observe () =
   let buf = Buffer.create 512 in
   let fmt = Format.formatter_of_buffer buf in
-  Format.fprintf fmt "%a" Pp.world w;
+  Format.fprintf fmt "%a" Pp.world ();
   Format.printf "\027[2J%s" (Buffer.contents buf);
   Format.pp_print_flush Format.std_formatter ()
 
-let rec over_time world =
-  let new_world = Life_and_death.update world in
-  observe world;
-  new_world |> over_time
+let rec over_time () =
+  observe ();
+  Life_and_death.update ();
+  over_time ()
 
-let error s = failwith @@ Format.sprintf "%s" s
-
-let jdlv size =
-  if size < 0 || size > Sys.max_array_length then
-    error "World size cannot be too big or negative"
+let jdlvdm () =
+  if
+    width < 0 || height < 0
+    || width > Sys.max_array_length
+    || height > Sys.max_array_length
+  then error "World size cannot be too big or negative"
   else
-    let world =
-      Array.init size (fun _i ->
-          Array.init size (fun _j ->
-              let r = Random.int 100 in
-              r >= 50 ) )
-    in
-    world |> over_time
-
-let usage = Format.sprintf "Usage: %s <size_of_the_map : int>" Sys.argv.(0)
+    Array.iteri
+      (fun j r ->
+        Array.iteri
+          (fun i _b ->
+            let r = Random.int 100 in
+            world.(i).(j) <- r >= 50 )
+          r )
+      world;
+  over_time ()
 
 let () =
   Random.self_init ();
-  if Array.length Sys.argv <> 2 then error usage
-  else
-    match int_of_string_opt Sys.argv.(1) with
-    | None -> error usage
-    | Some size -> jdlv size
+  jdlvdm ()
