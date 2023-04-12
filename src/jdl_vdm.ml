@@ -15,7 +15,7 @@ end = struct
     pp_array
       ~pp_sep:(fun _fmt () -> ())
       fmt
-      (fun fmt b -> Format.pp_print_string fmt (if b then "😒" else "🫥"))
+      (fun fmt b -> Format.pp_print_string fmt (if b then "🦝" else "🫥"))
       arr
 
   let world fmt arr =
@@ -79,7 +79,7 @@ end = struct
     in
     match fate with
     | Life -> Life
-    | Death -> if Random.int 1000 = 0 then Life else Death
+    | Death -> if Random.int 10000 = 0 then Life else Death
 
   let update world =
     let deep_copy_of arr = Array.map (Array.map Fun.id) arr in
